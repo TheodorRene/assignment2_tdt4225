@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 
 class FileTraversal:
@@ -14,31 +15,41 @@ class FileTraversal:
         """
         returns the path to all the users
         """
-        root, dirs, _ = next(os.walk(self.ROOT, topdown=True))
-        dirs.sort()
-        path_to_users = []
-        for name in dirs:
-            path_to_users.append(os.path.join(root, name))
-        return path_to_users
+        p = Path(self.ROOT)
+        return [x for x in p.iterdir() if x.is_dir()]
 
     def get_all_plt_by_user_id(self, user_id):
         """
         Returns path to all plts for a user
         """
-        path = self.ROOT + "/" + user_id + "/Trajectory"
-        root, _, files = next(os.walk(path, topdown=True))
-        paths = []
-        for name in files:
-            paths.append(os.path.join(root, name))
-        return paths
+        p = Path(self.ROOT) / user_id / "Trajectory"
+        return [x for x in p.iterdir()]
+
+    def get_all_ids(self):
+        """
+        returns the path to all the users
+        """
+        p = Path(self.ROOT)
+        paths = [x for x in p.iterdir() if x.is_dir()]
+        return sorted([x.name for x in paths])
+
+    def has_labels(self, user_id):
+        """ returns true if the user_id has labels """
+        p = Path(self.ROOT) / user_id
+        return len([x for x in p.iterdir()]) == 2
+
 
 def main():
     """
     Main function
     """
     file_object = FileTraversal()
-    print(file_object.path_to_users())
-    print(file_object.get_all_plt_by_user_id("000"))
+    #print(file_object.path_to_users())
+    #print(file_object.get_all_plt_by_user_id("000"))
+    all_ids = file_object.get_all_ids()
+    for id in all_ids:
+        if file_object.has_labels(id):
+            print(id, True)
 
 if __name__ == '__main__':
     main()
