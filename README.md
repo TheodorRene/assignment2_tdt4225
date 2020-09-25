@@ -6,3 +6,9 @@ Assignment 2 in TDT225
 The dataset is about 345MB so it wont be included in this repo. It can be
 downloaded from Blackboard or from
 https://home.samfundet.no/~theodorc/dataset.zip
+
+## How to run
+* extract the dataset in the root folder
+* enable vpn
+* python assignmet.py <password>
+
