@@ -38,6 +38,39 @@ class FileTraversal:
         p = Path(self.ROOT) / user_id
         return len([x for x in p.iterdir()]) == 2
 
+    def get_label_for_activity(self, user_id, start_date_time):
+        if not self.has_labels(user_id):
+            return "NULL"
+        labels_txt = Path(self.ROOT) / user_id / 'labels.txt'
+        with labels_txt.open() as f:
+            for line in f.readlines()[1:]:
+                start_date = self.parse_date_time(f.split("\t")[0])
+                label = f.split("\t")[-1].rstrip()
+
+    def get_start_time_and_label(self, user_id):
+        if not self.has_labels(user_id):
+            return [()]
+        labels_txt = Path(self.ROOT) / user_id / 'labels.txt'
+        start_time_and_label = []
+        with labels_txt.open() as f:
+            for line in f.readlines()[1:]:
+                start_date = self.parse_date_time(line.split("\t")[0])
+                label = line.split("\t")[-1].rstrip()
+                start_time_and_label.append((start_date, label))
+        return start_time_and_label
+
+
+    def parse_date_time_line(self, timestamp_line):
+        """ Takes a line from an .plt file and returns the timestamp"""
+        return timestamp_line.split(',')[-2] + " " + timestamp_line.split(",")[-1]
+
+    def parse_date_time(self, timestamp):
+        """ takes in timestamp from labels.txt and converts to DB format """
+        return timestamp.split(' ')[0].replace('/','-') + " " + timestamp.split(" ")[1]
+
+    def datetime_to_filename(self, timestamp):
+        """ this will probably not be used, but converts DB timestamp to filename"""
+        return timestamp.replace(" ","").replace("-","").replace(":","") + ".plt"
 
 def main():
     """
@@ -46,10 +79,8 @@ def main():
     file_object = FileTraversal()
     #print(file_object.path_to_users())
     #print(file_object.get_all_plt_by_user_id("000"))
-    all_ids = file_object.get_all_ids()
-    for id in all_ids:
-        if file_object.has_labels(id):
-            print(id, True)
+    s = file_object.get_start_time_and_label("010")[0][0]
+    print(file_object.datetime_to_filename(s))
 
 if __name__ == '__main__':
     main()

@@ -99,13 +99,13 @@ class Assignment:
     def add_activity_for_user(self,user_id):
        plts = self.fs_helper.get_all_plt_by_user_id(user_id)
        for plt in plts:
-            with plt.open()as f:
+            with plt.open() as f:
                 lines = f.readlines()
                 length_of_file = len(lines)
                 if length_of_file <= 2500:
                     transportation_mode = "NULL"
-                    start_date_time = self.parse_date_time(lines[6])
-                    end_date_time = self.parse_date_time(lines[length_of_file - 1])
+                    start_date_time = self.fs_helper.parse_date_time_line(lines[6])
+                    end_date_time = self.fs_helper.parse_date_time_line(lines[length_of_file - 1])
                     q = """ INSERT INTO activity (user_id,
                                                   transportation_mode,
                                                   start_date_time,
@@ -115,9 +115,6 @@ class Assignment:
                     self.cursor.execute(q % (user_id, transportation_mode, start_date_time, end_date_time))
        self.db_connection.commit()
 
-
-    def parse_date_time(self, timestamp_line):
-        return timestamp_line.split(',')[-2] + " " + timestamp_line.split(",")[-1]
 
 
 
