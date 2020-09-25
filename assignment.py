@@ -4,6 +4,7 @@ File for assignmetn
 from sys import argv
 from tabulate import tabulate
 from DbConnector import DbConnector
+from traverse import FileTraversal
 
 
 class Assignment:
@@ -23,6 +24,8 @@ class Assignment:
         )
         self.db_connection = self.connection.db_connection
         self.cursor = self.connection.cursor
+        self.fs_helper = FileTraversal()
+
 
     def initate_database(self):
         """
@@ -70,6 +73,29 @@ class Assignment:
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
 
+    def add_users(self):
+        """ Adds all the users into the database """
+        users_ids = self.fs_helper.get_all_ids()
+        for user_id in users_ids:
+            has_label = self.fs_helper.has_labels(user_id)
+            q = f"INSERT INTO user (id, has_labels) VALUES ('{user_id}',{has_label})"
+            self.cursor.execute(q)
+        self.db_connection.commit()
+
+    def truncate_table(self, table_name):
+        self.cursor.execute(f"TRUNCATE {table_name}")
+        self.db_connection.commit()
+        print(f"Truncated {table_name} table")
+
+    def fetch_data(self, table_name):
+        query = "SELECT * FROM %s"
+        self.cursor.execute(query % table_name)
+        rows = self.cursor.fetchall()
+        # Using tabulate to show the table in a nice way
+        print("Data from table %s, tabulated:" % table_name)
+        print(tabulate(rows, headers=self.cursor.column_names))
+        return rows
+
 
 def main():
     """
@@ -78,7 +104,10 @@ def main():
     program = None
     try:
         program = Assignment()
-        program.initate_database()
+        #program.initate_database()
+        #program.add_users()
+        program.truncate_table('user')
+        program.fetch_data('user')
         program.show_tables()
     except Exception as e:
         print("ERROR: Failed to use database:", e)
