@@ -39,7 +39,7 @@ class Assignment:
             """
         create_activity_table_q = """
             CREATE TABLE IF NOT EXISTS activity (
-                id int PRIMARY KEY,
+                id int auto_increment PRIMARY KEY,
                 user_id varchar(255),
                 transportation_mode varchar(255),
                 start_date_time DATETIME,
@@ -50,7 +50,7 @@ class Assignment:
             """
         create_trackpoint_table_q = """
             CREATE TABLE IF NOT EXISTS trackpoint (
-                id int PRIMARY KEY,
+                id int auto_increment PRIMARY KEY,
                 activity_id int,
                 lat DOUBLE,
                 lon DOUBLE,
@@ -96,6 +96,34 @@ class Assignment:
         print(tabulate(rows, headers=self.cursor.column_names))
         return rows
 
+    def add_activity_for_user(self,user_id):
+       plts = self.fs_helper.get_all_plt_by_user_id(user_id)
+       for plt in plts:
+            with plt.open()as f:
+                lines = f.readlines()
+                length_of_file = len(lines)
+                if length_of_file <= 2500:
+                    transportation_mode = "NULL"
+                    start_date_time = self.parse_date_time(lines[6])
+                    end_date_time = self.parse_date_time(lines[length_of_file - 1])
+                    q = """ INSERT INTO activity (user_id,
+                                                  transportation_mode,
+                                                  start_date_time,
+                                                  end_date_time)
+                            VALUES ( '%s', '%s','%s', '%s')
+                        """
+                    self.cursor.execute(q % (user_id, transportation_mode, start_date_time, end_date_time))
+       self.db_connection.commit()
+
+
+    def parse_date_time(self, timestamp_line):
+        return timestamp_line.split(',')[-2] + " " + timestamp_line.split(",")[-1]
+
+
+
+
+
+
 
 def main():
     """
@@ -106,8 +134,8 @@ def main():
         program = Assignment()
         #program.initate_database()
         #program.add_users()
-        program.truncate_table('user')
-        program.fetch_data('user')
+        program.add_activity_for_user('000')
+        program.fetch_data('activity')
         program.show_tables()
     except Exception as e:
         print("ERROR: Failed to use database:", e)
