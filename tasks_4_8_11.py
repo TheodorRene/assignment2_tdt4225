@@ -1,9 +1,24 @@
 from tabulate import tabulate
+from DbConnector import DbConnector
+from sys import argv
 
 class Tasks:
 
+    def __init__(self):
+        """
+        Kopiert :)) 
+        """
+        self.connection = DbConnector(
+            HOST='tdt4225-19.idi.ntnu.no',
+            DATABASE='db',
+            USER='testbruker',
+            PASSWORD=argv[1]
+        )
+        self.db_connection = self.connection.db_connection
+        self.cursor = self.connection.cursor
+
     
- def task_4(self):
+    def task_4(self):
         query = """ SELECT DISTINCT user_id
                     FROM activity 
                     WHERE transportation_mode LIKE 'taxi'
@@ -15,14 +30,14 @@ class Tasks:
 
 
 
-def task_8(self):
+    def task_8(self):
         query = """ SELECT user.id, activity.id, trackpoint.altitude, date_time
-                    FROM user INNER JOIN activity ON user.id=activity.user_id INNER JOIN trackpoin ON activity.id=trackpoint.activity_id
+                    FROM user INNER JOIN activity ON user.id=activity.user_id INNER JOIN trackpoint ON activity.id=trackpoint.activity_id
                     WHERE trackpoint.altitude <> -777
                     ORDER BY user.id, activity.id, date_time
                 """
-
-        self.cursor.execute(query)
+            
+        self.cursor.execute(query) #Får feilmelding her som visstnok betyr at det ikke er plass nok i /tmp på VMen til å utføre denne, vet ikke hvordan man fikser det 
         rows = self.cursor.fetchall()
         user_meters_gained = {}
 
@@ -44,20 +59,33 @@ def task_8(self):
 
 
 
-def task_11(self):
-        query = """ SELECT user.id, transportation_mode, count(transportation_mode) AS transportation_count
+    def task_11(self):
+        query = """ SELECT user.id, transportation_mode, COUNT(transportation_mode) AS transportation_count
                     FROM user INNER JOIN activity ON user.id=activity.user_id
+                    WHERE transportation_mode <> "NULL"
                     GROUP BY user.id, transportation_mode
                     HAVING transportation_count > 0
                     ORDER BY user.id, transportation_count DESC
-                """
+                """ #NB: tror at denne betyr at vi legger inn strengen "NULL" ikke faktisk NULL i databasen?
 
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
         user_top_transport_mode = {}
 
+        
         for row in rows:
             if row[0] not in user_top_transport_mode:
                 user_top_transport_mode[row[0]] = row[1]
 
         print(tabulate(user_top_transport_mode.items(), headers=("user_id", "most_used_transportation_mode")))
+
+
+
+def main():
+    program = Tasks()
+    #program.task_4()
+    program.task_8()
+    #program.task_11()
+
+if __name__ == '__main__':
+    main()
