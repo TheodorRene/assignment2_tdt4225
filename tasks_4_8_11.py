@@ -34,7 +34,7 @@ class Tasks:
 
         tptable = """ SELECT * FROM trackpoint WHERE trackpoint.altitude <> -777 """
 
-        query = f""" SELECT user.id, activity.id, trackpoint.altitude, date_time
+        query = f""" SELECT user.id, activity.id, FLOOR(trackpoint.altitude*0.3048), date_time
                     FROM user 
                     INNER JOIN activity ON user.id=activity.user_id 
                     INNER JOIN ({tptable}) AS trackpoint ON activity.id=trackpoint.activity_id
