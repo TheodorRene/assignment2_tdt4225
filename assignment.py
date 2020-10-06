@@ -17,10 +17,10 @@ class Assignment:
         Disse må endres når jeg får tilgang til VMen vår, for øyeblikket kjører jeg det lokalt
         """
         self.connection = DbConnector(
-            HOST='tdt4225-xx.idi.ntnu.no',
-            DATABASE='DATABASE_NAME',
-            USER='TEST_USER',
-            PASSWORD="test123"
+            HOST='tdt4225-19.idi.ntnu.no',
+            DATABASE='db',
+            USER='testbruker',
+            PASSWORD=argv[1]
         )
         self.db_connection = self.connection.db_connection
         self.cursor = self.connection.cursor
