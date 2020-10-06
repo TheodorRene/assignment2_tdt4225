@@ -21,7 +21,7 @@ class Tasks:
 
     def task1(self):
         def count_table(table_name):
-            q_count_table = f"SELECT count(id) FROM {table_name}"
+            q_count_table = f"SELECT '{table_name}', count(id) FROM {table_name}"
             self.cursor.execute(q_count_table)
             rows = self.cursor.fetchall()
             print(tabulate(rows, headers=self.cursor.column_names))
@@ -36,14 +36,14 @@ class Tasks:
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
 
-        query = "SELECT COUNT(id), transportation_mode FROM activity WHERE transportation_mode != 'NULL' GROUP BY transportation_mode ORDER BY COUNT(id)"
+        query = "SELECT COUNT(id), transportation_mode FROM activity WHERE transportation_mode != 'NULL' GROUP BY transportation_mode ORDER BY COUNT(id) DESC"
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
 
 def main():
     program = Tasks()
-    #program.task1()
+    program.task1()
     program.task5()
 
 if __name__ == '__main__':

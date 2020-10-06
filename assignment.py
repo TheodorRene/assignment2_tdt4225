@@ -30,6 +30,7 @@ class Assignment:
         """
         Initates the schema
         """
+        print("Initating database")
         create_user_table_q = """
             CREATE TABLE IF NOT EXISTS user (
                 id varchar(255) PRIMARY KEY,
@@ -77,6 +78,7 @@ class Assignment:
 
     def add_users(self):
         """ Adds all the users into the database """
+        print("adding users")
         users_ids = self.fs_helper.get_all_ids()
         for user_id in users_ids:
             has_label = self.fs_helper.has_labels(user_id)
@@ -92,6 +94,15 @@ class Assignment:
 
     def fetch_data(self, table_name):
         query = "SELECT * FROM %s"
+        self.cursor.execute(query % table_name)
+        rows = self.cursor.fetchall()
+        # Using tabulate to show the table in a nice way
+        print("Data from table %s, tabulated:" % table_name)
+        print(tabulate(rows, headers=self.cursor.column_names))
+        return rows
+
+    def fetch_10(self, table_name):
+        query = "SELECT * FROM %s LIMIT 10"
         self.cursor.execute(query % table_name)
         rows = self.cursor.fetchall()
         # Using tabulate to show the table in a nice way
@@ -216,12 +227,12 @@ def main():
     try:
         program = Assignment()
         program.initate_database()
-      #  program.add_users()
-      #  program.add_activity()
-        program.add_trackpoints()
-        # program.fetch_data('activity')
-        # program.fetch_data('user')
-        program.fetch_data('trackpoint')
+    #    program.add_users()
+    #    program.add_activity()
+    #    program.add_trackpoints()
+        program.fetch_10('user')
+        program.fetch_10('activity')
+        program.fetch_10('trackpoint')
         program.show_tables()
     except Exception as e:
         print("ERROR: Failed to use database:", e)
