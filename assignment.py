@@ -202,8 +202,8 @@ class Assignment:
         q = f"SELECT id FROM activity WHERE user_id='{user_id}' AND start_date_time='{date_id}'"
         self.cursor.execute(q)
         try:
-            activit_id = self.cursor.fetchone()[0]
-            return activit_id
+            activity_id = self.cursor.fetchone()[0]
+            return activity_id
         except Exception as e:
             print(q + "\n")
 
