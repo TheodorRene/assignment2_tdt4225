@@ -31,13 +31,17 @@ class Tasks:
 
 
     def task_8(self):
-        query = """ SELECT user.id, activity.id, trackpoint.altitude, date_time
-                    FROM user INNER JOIN activity ON user.id=activity.user_id INNER JOIN trackpoint ON activity.id=trackpoint.activity_id
-                    WHERE trackpoint.altitude <> -777
-                    ORDER BY user.id, activity.id, date_time
+
+        tptable = """ SELECT * FROM trackpoint WHERE trackpoint.altitude <> -777 """
+
+        query = f""" SELECT user.id, activity.id, trackpoint.altitude, date_time
+                    FROM user 
+                    INNER JOIN activity ON user.id=activity.user_id 
+                    INNER JOIN ({tptable}) AS trackpoint ON activity.id=trackpoint.activity_id
+                    ORDER BY user.id, activity.id, date_time  
                 """
             
-        self.cursor.execute(query) #Får feilmelding her som visstnok betyr at det ikke er plass nok i /tmp på VMen til å utføre denne, vet ikke hvordan man fikser det 
+        self.cursor.execute(query) 
         rows = self.cursor.fetchall()
         user_meters_gained = {}
 
@@ -60,14 +64,14 @@ class Tasks:
 
 
     def task_11(self):
+
         query = """ SELECT user.id, transportation_mode, COUNT(transportation_mode) AS transportation_count
                     FROM user INNER JOIN activity ON user.id=activity.user_id
                     WHERE transportation_mode <> "NULL"
                     GROUP BY user.id, transportation_mode
                     HAVING transportation_count > 0
                     ORDER BY user.id, transportation_count DESC
-                """ #NB: tror at denne betyr at vi legger inn strengen "NULL" ikke faktisk NULL i databasen?
-
+                """ 
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
         user_top_transport_mode = {}
