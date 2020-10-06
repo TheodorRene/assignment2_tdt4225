@@ -17,10 +17,10 @@ class Assignment:
         Disse må endres når jeg får tilgang til VMen vår, for øyeblikket kjører jeg det lokalt
         """
         self.connection = DbConnector(
-            HOST='tdt4225-19.idi.ntnu.no',
-            DATABASE='db',
-            USER='testbruker',
-            PASSWORD=argv[1]
+            HOST='tdt4225-xx.idi.ntnu.no',
+            DATABASE='DATABASE_NAME',
+            USER='TEST_USER',
+            PASSWORD="test123"
         )
         self.db_connection = self.connection.db_connection
         self.cursor = self.connection.cursor
@@ -202,8 +202,8 @@ class Assignment:
         q = f"SELECT id FROM activity WHERE user_id='{user_id}' AND start_date_time='{date_id}'"
         self.cursor.execute(q)
         try:
-            activity_id = self.cursor.fetchone()[0]
-            return activity_id
+            activit_id = self.cursor.fetchone()[0]
+            return activit_id
         except Exception as e:
             print(q + "\n")
 
