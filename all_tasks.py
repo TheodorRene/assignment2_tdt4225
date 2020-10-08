@@ -196,28 +196,31 @@ class Tasks:
     def task_9(self):
         """ Find all users who have invalid activities, and the number of invalid activities per user. """
 
-        lag_timestamp_table = """
-                                SELECT activity_id, @timestamp lag_timestamp, @timestamp:=date_time curr_timestamp
+        time_difference_table = """
+                                SELECT activity_id, TIMESTAMPDIFF(MINUTE, @timestamp, date_time) AS minute_difference,
+                                @timestamp:=date_time curr_timestamp
                                 FROM trackpoint
                                 ORDER BY activity_id, date_time
                               """
 
         invalid_activity_table = f"""
-                                    SELECT DISTINCT activity_id 
-                                    FROM ({lag_timestamp_table}) AS lag_timestamp_table
-                                    WHERE TIMESTAMPDIFF(MINUTE, lag_timestamp, curr_timestamp) > 5
+                                    SELECT DISTINCT activity_id, IF(@activity_id = activity_id, 1, 0)
+                                    AS is_new_activity, @activity_id:=activity_id
+                                    FROM ({time_difference_table}) AS time_difference_table
+                                    WHERE minute_difference >= 300
                                   """
 
         query = f"""
-                    SELECT user_id, COUNT(activity_id) as invalid_activity_count
+                    SELECT user_id, COUNT(activity_id) AS invalid_activity_count
                     FROM activity INNER JOIN ({invalid_activity_table}) AS invalid_activity_table 
                     ON activity.id = invalid_activity_table.activity_id
+                    WHERE is_new_activity = 0
                     GROUP BY user_id
                  """
 
-        timestamp_setup = "SET @timestamp='2009-05-30 03:44:45';"
+        variable_setup = "SET @timestamp='2000-01-01 00:00:00', @activity_id=0;"
 
-        self.cursor.execute(timestamp_setup)
+        self.cursor.execute(variable_setup)
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
