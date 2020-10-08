@@ -54,10 +54,10 @@ class Tasks:
 
     def task10(self):
         # Find the users who have tracked an activity in the Forbidden City of Beijing.
-        query = 'SELECT activity.user_id, ROUND(lat, 3) AS r_lat, ROUND(lon, 3) AS r_lon' \
+        query = 'SELECT DISTINCT activity.user_id' \
                 '   FROM activity' \
                 '   INNER JOIN trackpoint ON activity.id = trackpoint.activity_id' \
-                '   WHERE lat = 39.916 AND lon = 116.39'
+                '   WHERE ABS(lat - 39.916) < 0.001 AND ABS(lon - 116.397) < 0.001'
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
