@@ -2,6 +2,7 @@ from sys import argv
 from tabulate import tabulate
 from DbConnector import DbConnector
 
+
 class Tasks:
 
     def __init__(self):
@@ -18,26 +19,27 @@ class Tasks:
     def task2(self):
         """ Find the average activities per user. """
 
-        def count_table(table_name):
-            """ Return number of instances in a given table"""
+        user_activity_count = "SELECT user.id, count(activity.id) AS activity_count " \
+                              "FROM user INNER JOIN activity " \
+                              "ON user.id = activity.user_id " \
+                              "GROUP BY user.id"
 
-            query_count_table = f"SELECT count(id) FROM {table_name}"
-            self.cursor.execute(query_count_table)
-            rows = self.cursor.fetchall()
-            return rows[0][0]
+        query = "SELECT AVG(activity_count) " \
+                f"FROM ({user_activity_count}) AS user_activity_count "
 
-        activity_count = count_table("activity")
-        user_count = count_table("user")
-
-        print(activity_count/user_count)
+        self.cursor.execute(query)
+        rows = self.cursor.fetchall()
+        print(tabulate(rows, headers=self.cursor.column_names))
 
     def task6a(self):
         """ Find the year with the most recorded activities. """
+
         query = "SELECT YEAR(start_date_time) AS year, " \
                 "COUNT(id) AS activities " \
                 "FROM activity " \
                 "GROUP BY year " \
-                "ORDER BY activities DESC;"
+                "ORDER BY activities DESC " \
+                "LIMIT 1"
 
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
@@ -79,10 +81,8 @@ class Tasks:
 
         self.cursor.execute(timestamp_setup)
         self.cursor.execute(query)
-        print(self.cursor.statement)
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
-
 
 
 def main():
@@ -91,6 +91,7 @@ def main():
     program.task6a()
     program.task6b()
     program.task9()
+
 
 if __name__ == '__main__':
     main()
