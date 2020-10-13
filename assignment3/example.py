@@ -1,11 +1,17 @@
 from pprint import pprint
 from DbConnector import DbConnector
+from sys import argv
 
 
 class ExampleProgram:
 
     def __init__(self):
-        self.connection = DbConnector()
+        self.connection = DbConnector(
+            HOST='tdt4225-19.idi.ntnu.no',
+            DATABASE='my_db',
+            USER='admin_mydb',
+            PASSWORD=argv[1]
+        )
         self.client = self.connection.client
         self.db = self.connection.db
 
@@ -64,7 +70,7 @@ def main():
         program.show_coll()
         program.insert_documents(collection_name="Person")
         program.fetch_documents(collection_name="Person")
-        program.drop_coll(collection_name="Person")
+        #program.drop_coll(collection_name="Person")
         # program.drop_coll(collection_name='person')
         # program.drop_coll(collection_name='users')
         # Check that the table is dropped
