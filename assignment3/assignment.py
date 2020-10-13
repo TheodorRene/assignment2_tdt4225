@@ -117,7 +117,7 @@ class Assignment:
         print("adding activites")
         users_ids = self.fs_helper.get_all_ids()
         for user_id in users_ids:
-            print("\x1b[2J\x1b[H user_id", round(((int(user_id)+1)/182) * 100, 2), "%")
+            print("\x1b[2J\x1b[H INSERTING ACTIVITIES", round(((int(user_id)+1)/182) * 100, 2), "%")
             self.insert_activity_for_user(user_id)
 
     def add_activity(self):
@@ -133,7 +133,7 @@ class Assignment:
 
     def insert_trackpoint_by_user_id(self, user_id):
         """ Add trackpoints for a user """
-        print("\x1b[2J\x1b[H user_id", round(((int(user_id)+1)/182) * 100, 2), "%")
+        print("\x1b[2J\x1b[H INSERTING TRACKPOINTS", round(((int(user_id)+1)/182) * 100, 2), "%")
         plts = self.fs_helper.get_all_plt_by_user_id(user_id)
         for plt in plts:
             date_id = self.fs_helper.filename_to_timestamp(plt).rstrip()
