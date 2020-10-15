@@ -47,8 +47,9 @@ class FileTraversal:
         with labels_txt.open() as f:
             for line in f.readlines()[1:]:
                 start_date = self.parse_date_time(line.split("\t")[0])
+                end_date = self.parse_date_time(line.split("\t")[1])
                 label = line.split("\t")[-1].rstrip()
-                start_time_and_label.append((start_date, label))
+                start_time_and_label.append((start_date, label, end_date))
         return start_time_and_label
 
     def parse_date_time_line(self, timestamp_line):

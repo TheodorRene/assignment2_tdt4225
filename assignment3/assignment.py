@@ -92,19 +92,21 @@ class Assignment:
     def add_transportation_mode(self, user_id):
         """Add transportation_mode to existing activites for one user """
         data = self.fs_helper.get_start_time_and_label(user_id)
-        if data == [()]:
+        if data == [()]: # user does not have labels
             return
 
+        print("Adding transportation_mode for user", user_id)
+        operations = []
         for records in data:
-            q = """ UPDATE activity
-                    SET transportation_mode='%s'
-                    WHERE user_id='%s' AND
-                          start_date_time='%s'
-                """
-            query = q % (records[1], user_id, records[0])
-            self.cursor.execute(query)
+            myquery = {'user_id':user_id,"start_date_time":records[0], "end_date_time":records[2]}
+            newvalues = {"$set": {"transportation_mode": records[1]}}
+            operations.append((myquery, newvalues))
+        collection = self.db['activity']
+        for operation in operations:
+           update_result = collection.update_one(operation[0], operation[1])
+           print(operation)
+           print("updated?", str(update_result.matched_count == 1))
 
-        self.db_connection.commit()
 
     def add_transportation_mode_all(self):
         """ Add transportation_mode to all users """
@@ -120,7 +122,7 @@ class Assignment:
             print("\x1b[2J\x1b[H INSERTING ACTIVITIES", round(((int(user_id)+1)/182) * 100, 2), "%")
             self.insert_activity_for_user(user_id)
 
-    def add_activity(self):
+    def insert_activities_with_label(self):
         """ Add activity and transportation_mode for all users"""
         self.insert_activities()
         self.add_transportation_mode_all()
@@ -184,11 +186,11 @@ def main():
         #program.create_coll('user')
         #program.create_coll('activity')
         #program.create_coll('trackpoint')
-        program.drop_coll('user')
+        #program.drop_coll('user')
         program.drop_coll('activity')
         program.drop_coll('trackpoint')
-        program.insert_users()
-        program.insert_activities()
+        #program.insert_users()
+        program.insert_activities_with_label()
         program.insert_trackpoints()
     #    program.add_trackpoints()
         program.fetch_documents('user')
