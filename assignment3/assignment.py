@@ -8,6 +8,7 @@ from traverse import FileTraversal
 from pprint import pprint
 import uuid
 import time
+from pymongo import UpdateOne
 
 
 class Assignment:
@@ -60,7 +61,7 @@ class Assignment:
             }
             docs.append(doc)
         collection = self.db['user']
-        collection.insert_many(docs)
+        collection.insert_many(docs, ordered=False)
 
 
     def insert_activity_for_user(self, user_id):
@@ -85,7 +86,7 @@ class Assignment:
                     docs.append(doc)
         if docs:
             collection = self.db['activity']
-            collection.insert_many(docs)
+            collection.insert_many(docs, ordered=False)
         else:
             print("user_id", user_id, "does not have any activites or all activites are longer than 2500 lines")
 
@@ -100,18 +101,18 @@ class Assignment:
         for records in data:
             myquery = {'user_id':user_id,"start_date_time":records[0], "end_date_time":records[2]}
             newvalues = {"$set": {"transportation_mode": records[1]}}
-            operations.append((myquery, newvalues))
+            operations.append(UpdateOne(myquery, newvalues))
         collection = self.db['activity']
-        for operation in operations:
-           update_result = collection.update_one(operation[0], operation[1])
-           print(operation)
-           print("updated?", str(update_result.matched_count == 1))
+
+        print(len(operations), " number of operations will be done")
+        collection.bulk_write(operations)
 
 
     def add_transportation_mode_all(self):
         """ Add transportation_mode to all users """
         users_ids = self.fs_helper.get_all_ids()
         for user_id in users_ids:
+            print("\x1b[2J\x1b[H INSERTING TRANSPORTATION MODE", round(((int(user_id)+1)/182) * 100, 2), "%")
             self.add_transportation_mode(user_id)
 
     def insert_activities(self):
@@ -159,10 +160,9 @@ class Assignment:
                             "date_time": date_time
                         }
                         docs.append(doc)
-                    start_time = time.time()
                     collection = self.db['trackpoint']
-                    collection.insert_many(docs)
-                    print("insert_many",len(docs), "docs took", time.time() - start_time, "seconds")
+                    print("Inserting", len(docs), "documents")
+                    collection.insert_many(docs, ordered=False)
 
     def get_activity_id_by_date(self, user_id, date_id):
         """ Get activity_id by date and user_id """
@@ -186,13 +186,12 @@ def main():
         #program.create_coll('user')
         #program.create_coll('activity')
         #program.create_coll('trackpoint')
-        #program.drop_coll('user')
+        program.drop_coll('user')
         program.drop_coll('activity')
         program.drop_coll('trackpoint')
-        #program.insert_users()
+        program.insert_users()
         program.insert_activities_with_label()
         program.insert_trackpoints()
-    #    program.add_trackpoints()
         program.fetch_documents('user')
     except Exception as e:
         print("ERROR: Failed to use database:", e)
