@@ -16,14 +16,16 @@ class Program:
         self.db = self.connection.db
 
     def task_4(self):
+        """Find all users who have taken a taxi"""
         collection = self.db["activity"]
         documents = collection.find(
-            {"transportation_mode": "taxi"}, {"_id": 1})
+            {"transportation_mode": "taxi"}, {"user_id": 1}).distinct("user_id")
 
         for doc in documents:
             pprint(doc)
 
     def task_8(self):
+        """Find the top 20 users who have gained the most altitude meters"""
         valid_points = self.db["trackpoint"].aggregate([
             {"$match": {"altitude": {"$ne": "-777"}}},
             {"$lookup": {
@@ -57,6 +59,7 @@ class Program:
         pprint(top_20)
 
     def task_11(self):
+        """Find all users who have registered transportation_mode and their most used transportation_mode."""
         collection = self.db["user"]
         documents = collection.aggregate([
             {"$match": {"has_labels": True}},
@@ -97,8 +100,8 @@ def main():
     try:
         program = Program()
         # program.task_4()
-        program.task_8()
-        # program.task_11()
+        # program.task_8()
+        program.task_11()
 
     except Exception as e:
         print("ERROR: ", e)
