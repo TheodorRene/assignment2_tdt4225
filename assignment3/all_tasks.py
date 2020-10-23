@@ -3,6 +3,7 @@ import time
 from sys import argv
 from DbConnector import DbConnector
 from pprint import pprint
+from haversine import haversine
 
 
 class Tasks:
@@ -34,6 +35,19 @@ class Tasks:
         """ Find the average activities per user. """
 
         pprint(self.db["activity"].count() / self.db["user"].count())
+
+    def task_3(self):
+        """ Find the top 20 users with the highest number of activities."""
+        activity_collection = self.db['activity']
+
+        query = [
+            {'$sortByCount': '$user_id'},
+            {'$limit': 20}
+        ]
+        result = activity_collection.aggregate(query)
+
+        for r in result:
+            pprint(r)
 
     def task_4(self):
         """Find all users who have taken a taxi"""
@@ -122,6 +136,44 @@ class Tasks:
         for document in documents:
             pprint(document)
 
+    def task_7(self):
+        """Find the total distance (in km) walked in 2008, by user with id=112."""
+
+        def calc_total_distance(row):
+            sum_distance = 0
+            for r in row:
+                for i in range(len(r['all_trackpoints'])):
+                    distance = haversine(
+                        (float(r['all_trackpoints'][i - 1]['lat']), float(r['all_trackpoints'][i - 1]['lon'])),
+                        (float(r['all_trackpoints'][i]['lat']), float(r['all_trackpoints'][i]['lon'])))
+                    sum_distance += distance
+            return sum_distance
+
+        activity_collection = self.db['activity']
+
+        query = [
+            {'$match':
+                {'user_id': '112',
+                 'transportation_mode': 'walk',
+                 '$expr': {'$eq': [{'$year': {'$toDate': '$start_date_time'}}, 2008]}
+                 }
+             },
+            {'$lookup':
+                {'from': 'trackpoint',
+                 'localField': '_id',
+                 'foreignField': 'activity_id',
+                 'as': 'all_trackpoints'
+                 }
+             },
+            {'$project': {'_id': 1, 'lat': 1, 'lon': 1, 'all_trackpoints': 1}},
+            {'$sort': {'_id': 1}}
+        ]
+
+        result = activity_collection.aggregate(query)
+        tot_distance = calc_total_distance(result)
+        print("Total distance:")
+        pprint(tot_distance)
+
     def task_8(self):
         """Find the top 20 users who have gained the most altitude meters"""
         valid_points = self.db["trackpoint"].aggregate([
@@ -146,9 +198,10 @@ class Tasks:
 
             if previous_point == None:
                 previous_point = point
-            elif (float(point['altitude']) > float(previous_point['altitude'])) and point['activity_id'] == previous_point['activity_id']:
+            elif (float(point['altitude']) > float(previous_point['altitude'])) and point['activity_id'] == \
+                    previous_point['activity_id']:
                 user_metres_dict[activity['user_id']
-                                 ] += math.floor((float(point['altitude']) - float(previous_point['altitude'])) * 0.3048)
+                ] += math.floor((float(point['altitude']) - float(previous_point['altitude'])) * 0.3048)
             previous_point = point
 
         top_20 = sorted(user_metres_dict.items(), key=lambda tup: tup[1])[-20:]
@@ -208,7 +261,36 @@ class Tasks:
 
         pprint(invalid_activity_count)
 
+    def task_10(self):
+        """Find the users who have tracked an activity in the Forbidden City of Beijing."""
 
+        def find_users(data):
+            users = set()
+            for r in data:
+                users.add(r['user'][0]['user_id'])
+            return users
+
+        trackpoint_collection = self.db['trackpoint']
+
+        query = [
+            {'$match':
+                {'$expr': {'$and': [{'$and': [{'$gte': ['$lat', '39.915']}, {'$lte': ['$lat', '39.917']}]},
+                                    {'$and': [{'$gte': ['$lon', '116.396']}, {'$lte': ['$lon', '116.398']}]}]}}
+             },
+            {'$lookup':
+                {'from': 'activity',
+                 'localField': 'activity_id',
+                 'foreignField': '_id',
+                 'as': 'user'
+                 }
+             },
+            {'$project': {'user': 1}}
+        ]
+
+        result = trackpoint_collection.aggregate(query)
+        all_users = find_users(result)
+        print("Has been in the Forbidden City of Beijing:")
+        pprint(all_users)
 
     def task_11(self):
         """Find all users who have registered transportation_mode and their most used transportation_mode."""
@@ -250,10 +332,17 @@ class Tasks:
 def main():
     program = Tasks()
     program.task_1()
-    #program.task_4()
-    #program.task_5()
-    #program.task_8()
-    #program.task_11()
+    program.task_2()
+    program.task_3()
+    program.task_4()
+    program.task_5()
+    program.task_6a()
+    program.task_6b()
+    program.task_7()
+    program.task_8()
+    program.task_9()
+    program.task_10()
+    program.task_11()
 
 
 if __name__ == '__main__':
