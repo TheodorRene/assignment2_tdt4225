@@ -22,7 +22,7 @@ class Tasks:
 
         def count_collection(collection_name):
             collection_count = self.db[collection_name].count_documents({})
-            pprint(collection_count)
+            print(collection_name + " " + str(collection_count))
 
         count_collection("user")
         count_collection("activity")
