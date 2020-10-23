@@ -1,4 +1,3 @@
-import datetime
 import time
 from pprint import pprint
 from DbConnector import DbConnector
@@ -99,9 +98,8 @@ class Program:
             """ Returns the user that the given @param activity_id belongs to. """
 
             activities = db["activity"]
-            activity = activities.find({"_id": activity_id})
-            for activit in activity:
-                return activit["user_id"]
+            activity = activities.find_one({"_id": activity_id})
+            return activity["user_id"]
 
         collection = self.db["trackpoint"]
         documents = collection.aggregate(
@@ -125,7 +123,6 @@ class Program:
 
             previous_document = document
 
-        print(len(invalid_activities))
         for invalid_activity in invalid_activities:
             invalid_user = _find_user_by_activity_id(self.db, invalid_activity)
 
